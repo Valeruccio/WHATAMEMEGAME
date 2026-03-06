@@ -290,6 +290,9 @@ class MemeGameApp(tk.Tk):
         self.script_font: tkfont.Font | None = None
         self.situation_choice_to_index: dict[str, int] | None = None
         self.situation_select_vars: list[tk.StringVar] = []
+        # Общие переменные таймера, чтобы показывать его на всех вкладках
+        self.timer_seconds_var = tk.IntVar(value=180)
+        self.timer_label_var = tk.StringVar(value="03:00")
 
         self.create_widgets()
 
@@ -314,6 +317,23 @@ class MemeGameApp(tk.Tk):
         self.init_reactions_tab()
         self.init_script_tab()
         self.init_timer_tab()
+
+    def create_timer_bar(self, parent: tk.Widget) -> ttk.Frame:
+        """Небольшая панель таймера (отображение + старт/стоп) для верхних вкладок."""
+        bar = ttk.Frame(parent)
+        ttk.Label(bar, text="Таймер:").pack(side=tk.LEFT)
+        ttk.Label(
+            bar,
+            textvariable=self.timer_label_var,
+            font=("Segoe UI", 10, "bold"),
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(bar, text="Старт", command=self.start_timer).pack(
+            side=tk.LEFT, padx=2
+        )
+        ttk.Button(bar, text="Стоп", command=self.stop_timer).pack(
+            side=tk.LEFT, padx=2
+        )
+        return bar
 
     # --- Situations tab ---
     def init_situations_tab(self):
@@ -363,6 +383,11 @@ class MemeGameApp(tk.Tk):
         ).pack(anchor="e", pady=5)
 
         self.refresh_situations_list()
+
+        # Таймер на вкладке банка ситуаций
+        self.create_timer_bar(self.situations_frame).pack(
+            side=tk.BOTTOM, fill=tk.X, padx=5, pady=5
+        )
 
     def refresh_situations_list(self):
         self.situations_list.delete(0, tk.END)
@@ -475,6 +500,11 @@ class MemeGameApp(tk.Tk):
 
         self.refresh_greetings_list()
 
+        # Таймер на вкладке приветствий
+        self.create_timer_bar(self.greetings_frame).pack(
+            side=tk.BOTTOM, fill=tk.X, padx=5, pady=5
+        )
+
     def refresh_greetings_list(self):
         self.greetings_list.delete(0, tk.END)
         for g in self.greetings:
@@ -584,6 +614,11 @@ class MemeGameApp(tk.Tk):
         ).pack(side=tk.LEFT, padx=2)
 
         self.refresh_reactions_list()
+
+        # Таймер на вкладке STOP-реакций
+        self.create_timer_bar(self.reactions_frame).pack(
+            side=tk.BOTTOM, fill=tk.X, padx=5, pady=5
+        )
     def refresh_reactions_list(self):
         self.reactions_list.delete(0, tk.END)
         for r in self.reactions:
@@ -734,6 +769,11 @@ class MemeGameApp(tk.Tk):
         self.script_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.update_script_font()
 
+        # Таймер на вкладке программы игры
+        self.create_timer_bar(self.script_frame).pack(
+            side=tk.BOTTOM, fill=tk.X, padx=5, pady=5
+        )
+
     def generate_script(self):
         start_time = self.start_time_var.get().strip() or "16:00"
         # Собираем выбранные ситуации из селектов
@@ -838,12 +878,10 @@ class MemeGameApp(tk.Tk):
         ttk.Label(controls, text="Длительность (секунд):").grid(
             row=0, column=0, sticky="e"
         )
-        self.timer_seconds_var = tk.IntVar(value=180)
         ttk.Spinbox(
             controls, from_=10, to=3600, textvariable=self.timer_seconds_var, width=7
         ).grid(row=0, column=1, padx=5)
 
-        self.timer_label_var = tk.StringVar(value="03:00")
         timer_label = ttk.Label(
             frame, textvariable=self.timer_label_var, font=("Segoe UI", 32, "bold")
         )
